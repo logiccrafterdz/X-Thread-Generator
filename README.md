@@ -315,7 +315,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Documentation**: Check our [Wiki](../../wiki) for detailed guides
+- 🐦 Twitter: [@Arana_lib]
+- 📱 Telegram: [t.me/LogicCrafterDZ]
+- 📧 Email: [logiccrafterdz@gmail.com]
 - **Issues**: Report bugs via [GitHub Issues](../../issues)
 - **Discussions**: Join our [GitHub Discussions](../../discussions)
 - **Security**: Report security issues privately via email
