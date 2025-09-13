@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X Thread Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            transition: all 0.3s ease;
+        }
+
+        body[dir="rtl"] {
+            font-family: 'Noto Sans Arabic', 'Noto Sans', sans-serif;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e1e8ed;
+        }
+
+        body.dark-mode .header,
+        body.dark-mode .input-section,
+        body.dark-mode .output-section {
+            background: #2d3748;
+            color: #e1e8ed;
+        }
+
+        body.dark-mode input,
+        body.dark-mode select,
+        body.dark-mode textarea {
+            background: #4a5568;
+            border-color: #718096;
+            color: #e1e8ed;
+        }
+
+        body.dark-mode input:focus,
+        body.dark-mode select:focus,
+        body.dark-mode textarea:focus {
+            border-color: #1da1f2;
+        }
+
+        body.dark-mode .generate-btn {
+            background: #1da1f2;
+        }
+
+        body.dark-mode .tweet-card {
+            background: #4a5568;
+            border-color: #718096;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #1da1f2;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-section, .output-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #1da1f2;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #1da1f2;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #1da1f2, #0d7bb8);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(29, 161, 242, 0.3);
+        }
+
+        .generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1da1f2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #c62828;
+        }
+
+        .warning {
+            background: #fff8e1;
+            color: #f57c00;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #f57c00;
+        }
+
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .thread-preview {
+            margin-top: 20px;
+        }
+
+        .tweet {
+            background: #f8f9fa;
+            border: 1px solid #e1e8ed;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .tweet.rtl {
+            direction: rtl;
+            text-align: right;
+        }
+
+        .tweet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .tweet-content {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .tweet-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .char-count {
+            font-weight: 600;
+        }
+
+        .char-count.warning {
+            color: #f57c00;
+        }
+
+        .char-count.error {
+            color: #c62828;
+        }
+
+        .hashtags {
+            color: #1da1f2;
+            margin-top: 8px;
+        }
+
+        .emojis {
+            margin-top: 8px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #1da1f2;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .metadata {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .char-counter {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .health-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+
+        .health-indicator.warning {
+            background: #ffc107;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+        }
+
+        .health-indicator.error {
+            background: #dc3545;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+        }
+
+        /* Preview Modal Styles */
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            max-height: 80vh;
+            width: 90%;
+            overflow: hidden;
+            animation: slideIn 0.3s ease;
+        }
+
+        body.dark-mode .modal-content {
+            background: #2d3748;
+            color: #e1e8ed;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e1e8ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark-mode .modal-header {
+            border-bottom-color: #4a5568;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        body.dark-mode .close-modal {
+            color: #e1e8ed;
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .tweet-preview {
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+        }
+
+        body.dark-mode .tweet-preview {
+            background: #4a5568;
+            border-color: #718096;
+        }
+
+        .tweet-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .char-count {
+            color: #666;
+        }
+
+        body.dark-mode .char-count {
+            color: #a0aec0;
+        }
+
+        .tweet-content {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .tweet-hashtags {
+            color: #1da1f2;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .tweet-cta {
+            font-style: italic;
+            color: #666;
+            font-size: 14px;
+        }
+
+        body.dark-mode .tweet-cta {
+            color: #a0aec0;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* History Section Styles */
+        .history-section {
+            margin-bottom: 30px;
+        }
+
+        .history-item {
+            background: #f8f9fa;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: #e9ecef;
+            border-color: #1da1f2;
+            transform: translateY(-1px);
+        }
+
+        body.dark-mode .history-item {
+            background: #4a5568;
+            border-color: #718096;
+            color: #e1e8ed;
+        }
+
+        body.dark-mode .history-item:hover {
+            background: #5a6578;
+            border-color: #1da1f2;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-meta {
+            font-size: 12px;
+            color: #666;
+        }
+
+        body.dark-mode .history-meta {
+            color: #a0aec0;
+        }
+
+        .history-preview {
+            font-size: 14px;
+            line-height: 1.4;
+            color: #333;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        body.dark-mode .history-preview {
+            color: #e1e8ed;
+        }
+
+        .history-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        body.dark-mode .history-stats {
+            color: #a0aec0;
+        }
+
+        .history-empty {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        body.dark-mode .history-empty {
+            color: #a0aec0;
+        }
+
+        /* Dual-Audience Language Support */
+        #languageToggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            padding: 8px 12px;
+            font-size: 14px;
+            background: #1da1f2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(29, 161, 242, 0.3);
+        }
+
+        #languageToggle:hover {
+            background: #0d7bb8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(29, 161, 242, 0.4);
+        }
+
+        body.dark-mode #languageToggle {
+            background: #1da1f2;
+            box-shadow: 0 2px 10px rgba(29, 161, 242, 0.5);
+        }
+
+        /* RTL Support Enhancements */
+        body[dir="rtl"] .form-row {
+            direction: rtl;
+        }
+
+        body[dir="rtl"] .checkbox-group {
+            flex-direction: row-reverse;
+        }
+
+        body[dir="rtl"] .action-buttons {
+            direction: rtl;
+        }
+
+        body[dir="rtl"] .history-header {
+            direction: rtl;
+        }
+
+        body[dir="rtl"] .history-stats {
+            direction: rtl;
+        }
+
+        body[dir="rtl"] #languageToggle {
+            left: auto;
+            right: 20px;
+        }
+
+        /* Ensure technical content stays LTR */
+        .technical-content,
+        select option,
+        .tweet-content code,
+        .api-response,
+        .error-details {
+            direction: ltr;
+            text-align: left;
+        }
+
+        body[dir="rtl"] .technical-content,
+        body[dir="rtl"] select option,
+        body[dir="rtl"] .tweet-content code,
+        body[dir="rtl"] .api-response,
+        body[dir="rtl"] .error-details {
+            direction: ltr;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="health-indicator" id="healthIndicator" title="Service Status"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🧵 X Thread Generator</h1>
+            <p>Convert your long-form content into engaging X threads with Arabic and English support</p>
+            <div class="copyright" style="margin-top: 15px; font-size: 14px; color: #666; border-top: 1px solid #e1e8ed; padding-top: 15px;">
+                © 2025 LogicCrafterDZ - All Rights Reserved
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">📝 Input</h2>
+                
+                <form id="threadForm">
+                    <div class="form-group">
+                        <label for="text">Your Content *</label>
+                        <textarea id="text" name="text" placeholder="Paste your article, notes, or content here..." required></textarea>
+                        <div class="char-counter" id="textCounter">0 characters</div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="language">Language</label>
+                            <select id="language" name="language">
+                                <option value="auto">Auto-detect</option>
+                                <option value="en">English</option>
+                                <option value="ar">Arabic</option>
+                                <option value="both">Mixed</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="style">Writing Style</label>
+                            <select id="style" name="style">
+                                <option value="educational">Educational</option>
+                                <option value="engaging">Engaging</option>
+                                <option value="professional">Professional</option>
+                                <option value="technical">Technical</option>
+                                <option value="concise">Concise</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="maxTweets">Max Tweets</label>
+                            <input type="number" id="maxTweets" name="maxTweets" min="1" max="20" value="5">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="includeHashtags" name="includeHashtags" checked>
+                                <label for="includeHashtags">Include Hashtags</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="includeImages" name="includeImages">
+                                <label for="includeImages">Image Suggestions</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="personalNote">Personal Note (optional)</label>
+                        <textarea id="personalNote" name="personalNote" placeholder="Add a personal note to append at the end of your thread..." rows="2"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="darkMode" name="darkMode">
+                                <label for="darkMode">🌙 Dark Mode</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <!-- Space for future options -->
+                        </div>
+                    </div>
+
+                    <button type="submit" class="generate-btn" id="generateBtn">
+                        🚀 Generate Thread
+                    </button>
+                    
+                    <button type="button" class="btn btn-info" id="showHistoryBtn" style="width: 100%; margin-top: 10px;">
+                        📚 Show History
+                    </button>
+                </form>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p id="loadingMessage">Generating your thread...</p>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <h2 class="section-title">🧵 Generated Thread</h2>
+                
+                <div id="output">
+                    <p style="text-align: center; color: #666; padding: 40px;">
+                        Your generated thread will appear here...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="history-section" id="historySection" style="display: none;">
+            <div class="input-section">
+                <h2 class="section-title">📚 Recent Threads</h2>
+                <div class="action-buttons" style="margin-bottom: 20px;">
+                    <button class="btn btn-secondary" id="hideHistoryBtn">Hide History</button>
+                    <button class="btn btn-info" id="refreshHistoryBtn">Refresh</button>
+                </div>
+                <div id="historyList">
+                    <p style="text-align: center; color: #666; padding: 20px;">Loading history...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Built for personal use • No data collection • <a href="/api/health" target="_blank">Service Status</a></p>
+        </div>
+    </div>
+
+    <script src="languageManager.js"></script>
+    <script src="main.js"></script>
+    <script>
+        // Initialize dual-audience language system
+        const languageManager = new LanguageManager();
+        languageManager.initialize();
+        
+        // Make language manager available globally
+        window.languageManager = languageManager;
+    </script>
+</body>
+</html>

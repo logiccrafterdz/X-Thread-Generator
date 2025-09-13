@@ -1,0 +1,167 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Twitter Thread Schema",
+  "description": "Schema for validating Twitter thread generation responses",
+  "type": "object",
+  "required": ["metadata", "thread", "thread_summary"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["language", "style_requested", "max_tweets_requested", "tweets_generated", "direction"],
+      "properties": {
+        "language": {
+          "type": "string",
+          "enum": ["ar", "en", "mixed", "auto"]
+        },
+        "style_requested": {
+          "type": "string",
+          "enum": ["educational", "technical", "concise", "engaging", "professional"]
+        },
+        "tone_detected": {
+          "type": "string",
+          "description": "The tone detected in the input text"
+        },
+        "max_tweets_requested": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "tweets_generated": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "direction": {
+          "type": "string",
+          "enum": ["ltr", "rtl", "mixed"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "thread": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["index", "text", "char_count"],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 280
+          },
+          "char_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 280
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "hashtags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^#[a-zA-Z0-9_\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF\\uFE70-\\uFEFF]+"
+            },
+            "maxItems": 5,
+            "default": []
+          },
+          "emoji_suggestions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "default": []
+          },
+          "cta": {
+            "type": ["string", "null"],
+            "description": "Call to action for the tweet"
+          },
+          "image_suggestion": {
+            "type": ["object", "null"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["infographic", "chart", "diagram", "screenshot", "photo"]
+              },
+              "content": {
+                "type": "string",
+                "description": "Suggested content for the image"
+              },
+              "keywords": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "template": {
+                "type": "string",
+                "enum": ["horizontal_list", "vertical_list", "comparison", "process", "highlight"]
+              }
+            },
+            "required": ["type", "content"],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "thread_summary": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 200,
+      "description": "Brief summary of the thread structure"
+    },
+    "estimated_engagement_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Estimated engagement score (0-10)"
+    },
+    "publishing_recommendations": {
+      "type": "object",
+      "properties": {
+        "best_time": {
+          "type": "string",
+          "pattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9] GMT[+-][0-9]{1,2}$",
+          "description": "Recommended publishing time"
+        },
+        "thread_timing": {
+          "type": "string",
+          "description": "Recommended timing between tweets"
+        },
+        "engagement_tips": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "string",
+      "description": "Error message if generation failed"
+    }
+  },
+  "additionalProperties": false,
+  "anyOf": [
+    {
+      "required": ["metadata", "thread", "thread_summary"]
+    },
+    {
+      "required": ["error"]
+    }
+  ]
+}
